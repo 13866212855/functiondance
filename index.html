@@ -396,6 +396,150 @@
             color: #3498db;
         }
 
+        /* 深色主题下的知识点面板样式 */
+        body.dark-theme .knowledge-panel {
+            background: rgba(30, 30, 30, 0.95);
+            border-left: 2px solid #444;
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-theme .knowledge-section {
+            background: rgba(40, 40, 40, 0.8);
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        body.dark-theme .knowledge-section h4 {
+            color: #e0e0e0;
+        }
+
+        body.dark-theme .knowledge-section p {
+            color: #ccc;
+        }
+
+        body.dark-theme .knowledge-section strong {
+            color: #e0e0e0;
+        }
+
+        body.dark-theme .knowledge-section li {
+            color: #bbb;
+        }
+
+        body.dark-theme .knowledge-section li::marker {
+            color: #667eea;
+        }
+
+        /* 知识点面板样式 */
+        .knowledge-panel {
+            position: fixed;
+            top: 0;
+            right: -600px;
+            width: 580px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-left: 2px solid #e0e0e0;
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: none;
+        }
+
+        .knowledge-panel.show {
+            right: 0;
+            display: block;
+        }
+
+        .knowledge-header {
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .knowledge-header h3 {
+            margin: 0;
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .knowledge-content {
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .knowledge-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .knowledge-section h4 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.2em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .knowledge-section p {
+            margin: 10px 0;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        .knowledge-section strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .knowledge-section ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .knowledge-section li {
+            margin: 8px 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .knowledge-section li::marker {
+            color: #667eea;
+        }
+
         @media (max-width: 768px) {
             .control-panel {
                 grid-template-columns: 1fr;
@@ -434,6 +578,88 @@
     <div class="theme-switcher">
         <div class="theme-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" data-theme="light" title="浅色主题"></div>
         <div class="theme-btn" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);" data-theme="dark" title="深色主题"></div>
+
+        <!-- 知识点面板 -->
+        <div id="knowledgePanel" class="knowledge-panel">
+            <div class="knowledge-header">
+                <h3>📚 三角函数知识点</h3>
+                <button id="closeKnowledge" class="close-btn">×</button>
+            </div>
+            <div class="knowledge-content">
+                <div class="knowledge-section">
+                    <h4>🌊 振幅 (Amplitude)</h4>
+                    <p><strong>定义：</strong>振幅是三角函数图像偏离平衡位置的最大距离，决定了函数图像的"高度"。</p>
+                    <p><strong>数学表示：</strong>在函数 y = A·sin(x) 中，A 就是振幅</p>
+                    <p><strong>特点：</strong></p>
+                    <ul>
+                        <li>A > 1 时，图像被纵向拉伸</li>
+                        <li>0 < A < 1 时，图像被纵向压缩</li>
+                        <li>A < 0 时，图像关于x轴翻转</li>
+                    </ul>
+                </div>
+
+                <div class="knowledge-section">
+                    <h4>⚡ 频率 (Frequency)</h4>
+                    <p><strong>定义：</strong>频率决定了三角函数在单位长度内完成周期性变化的次数。</p>
+                    <p><strong>数学表示：</strong>在函数 y = sin(ωx) 中，ω 称为角频率</p>
+                    <p><strong>周期关系：</strong>T = 2π/ω（周期与频率成反比）</p>
+                    <p><strong>特点：</strong></p>
+                    <ul>
+                        <li>ω > 1 时，图像被横向压缩，周期变小</li>
+                        <li>0 < ω < 1 时，图像被横向拉伸，周期变大</li>
+                        <li>ω 越大，函数变化越快</li>
+                    </ul>
+                </div>
+
+                <div class="knowledge-section">
+                    <h4>🔄 相位 (Phase)</h4>
+                    <p><strong>定义：</strong>相位决定了三角函数图像在水平方向上的平移位置。</p>
+                    <p><strong>数学表示：</strong>在函数 y = sin(x + φ) 中，φ 就是初相位</p>
+                    <p><strong>特点：</strong></p>
+                    <ul>
+                        <li>φ > 0 时，图像向左平移 φ 个单位</li>
+                        <li>φ < 0 时，图像向右平移 |φ| 个单位</li>
+                        <li>相位决定了函数的起始状态</li>
+                    </ul>
+                </div>
+
+                <div class="knowledge-section">
+                    <h4>📊 垂直偏移 (Vertical Shift)</h4>
+                    <p><strong>定义：</strong>垂直偏移使整个函数图像在垂直方向上平移。</p>
+                    <p><strong>数学表示：</strong>在函数 y = sin(x) + k 中，k 就是垂直偏移</p>
+                    <p><strong>特点：</strong></p>
+                    <ul>
+                        <li>k > 0 时，图像向上平移 k 个单位</li>
+                        <li>k < 0 时，图像向下平移 |k| 个单位</li>
+                        <li>改变函数的平衡位置</li>
+                    </ul>
+                </div>
+
+                <div class="knowledge-section">
+                    <h4>🎯 综合函数形式</h4>
+                    <p><strong>一般形式：</strong>y = A·sin(ωx + φ) + k</p>
+                    <p><strong>参数说明：</strong></p>
+                    <ul>
+                        <li><strong>A</strong> - 振幅，控制图像的纵向伸缩</li>
+                        <li><strong>ω</strong> - 角频率，控制图像的横向伸缩</li>
+                        <li><strong>φ</strong> - 初相位，控制图像的水平平移</li>
+                        <li><strong>k</strong> - 垂直偏移，控制图像的垂直平移</li>
+                    </ul>
+                </div>
+
+                <div class="knowledge-section">
+                    <h4>💡 学习建议</h4>
+                    <p>通过调节左侧的参数滑块，观察各个参数对函数图像的影响：</p>
+                    <ul>
+                        <li>先固定其他参数，单独调节一个参数观察变化</li>
+                        <li>使用动画功能观察参数的动态变化效果</li>
+                        <li>尝试预测参数变化后的图像形状，然后验证</li>
+                        <li>注意观察函数性质面板中数值的变化</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div class="container">
@@ -517,6 +743,7 @@
             </div>
             <button class="animation-btn" id="animateBtn">🎬 开始动画演示</button>
             <button class="animation-btn" id="resetBtn">🔄 重置参数</button>
+            <button class="animation-btn" id="knowledgeBtn">📚 知识点</button>
             <button class="animation-btn" id="randomBtn">🎲 随机参数</button>
         </div>
 
@@ -550,6 +777,9 @@
         const animationType = document.getElementById('animationType');
         const animationSpeed = document.getElementById('animationSpeed');
         const speedValue = document.getElementById('speedValue');
+        const knowledgeBtn = document.getElementById('knowledgeBtn');
+        const knowledgePanel = document.getElementById('knowledgePanel');
+        const closeKnowledge = document.getElementById('closeKnowledge');
         
         // 分析面板元素
         const periodValue = document.getElementById('periodValue');
@@ -1026,6 +1256,31 @@
             // 动画速度控制
             animationSpeed.addEventListener('input', () => {
                 speedValue.textContent = parseFloat(animationSpeed.value).toFixed(1) + 'x';
+            });
+            
+            // 知识点面板控制
+            knowledgeBtn.addEventListener('click', function() {
+                knowledgePanel.classList.add('show');
+            });
+
+            closeKnowledge.addEventListener('click', function() {
+                knowledgePanel.classList.remove('show');
+            });
+
+            // 点击面板外部关闭知识点面板
+            document.addEventListener('click', function(e) {
+                if (knowledgePanel.classList.contains('show') && 
+                    !knowledgePanel.contains(e.target) && 
+                    !knowledgeBtn.contains(e.target)) {
+                    knowledgePanel.classList.remove('show');
+                }
+            });
+
+            // ESC键关闭知识点面板
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && knowledgePanel.classList.contains('show')) {
+                    knowledgePanel.classList.remove('show');
+                }
             });
             
             // 初始化新功能
