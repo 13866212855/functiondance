@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>函数之舞：三角函数交互式探索</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 动态背景粒子效果 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.6; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .title {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .formula-display {
+            text-align: center;
+            font-size: 20px;
+            color: #e74c3c;
+            font-weight: bold;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #e74c3c;
+        }
+
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .slider-label {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            margin-bottom: 10px;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .slider-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #27ae60;
+            background: #e8f5e8;
+            padding: 5px 10px;
+            border-radius: 15px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        #functionCanvas {
+            border: 3px solid #34495e;
+            border-radius: 10px;
+            background-color: #f0f0f0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 主题切换器 */
+        .theme-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .theme-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.1);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .theme-btn.active {
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* 预设参数按钮组 */
+        .preset-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .preset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .preset-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 函数性质分析面板 */
+        .analysis-panel {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 5px solid #007bff;
+        }
+
+        .analysis-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .analysis-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .analysis-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .analysis-label {
+            font-weight: bold;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .analysis-value {
+            font-size: 16px;
+            color: #007bff;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* 动画控制面板 */
+        .animation-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .animation-type-selector, .animation-speed-control {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .animation-type-selector label, .animation-speed-control label {
+            color: #2c3e50;
+            font-weight: 600;
+            min-width: 80px;
+        }
+        
+        .animation-type-selector select {
+            background: rgba(255,255,255,0.9);
+            color: #2c3e50;
+            border: 1px solid rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        
+        .animation-type-selector select option {
+            background: white;
+            color: #2c3e50;
+        }
+        
+        .animation-speed-control input[type="range"] {
+            flex: 1;
+            margin: 0 10px;
+        }
+        
+        .animation-speed-control #speedValue {
+            color: #3498db;
+            font-weight: 600;
+            min-width: 40px;
+        }
+
+        .animation-btn {
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .animation-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .animation-btn.active {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        /* 深色主题 */
+        body.dark-theme {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        }
+
+        body.dark-theme .container {
+            background: rgba(52, 73, 94, 0.95);
+            color: #ecf0f1;
+        }
+
+        body.dark-theme .formula-display {
+            background: rgba(44, 62, 80, 0.8);
+            color: #e74c3c;
+        }
+
+        body.dark-theme .control-panel {
+            background: rgba(44, 62, 80, 0.6);
+        }
+
+        body.dark-theme .analysis-panel {
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+            color: #ecf0f1;
+        }
+
+        body.dark-theme .analysis-item {
+            background: rgba(52, 73, 94, 0.8);
+            color: #ecf0f1;
+        }
+
+        body.dark-theme .animation-type-selector label,
+        body.dark-theme .animation-speed-control label {
+            color: #ecf0f1;
+        }
+        
+        body.dark-theme .animation-type-selector select {
+            background: rgba(44, 62, 80, 0.8);
+            color: #ecf0f1;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        body.dark-theme .animation-type-selector select option {
+            background: #2c3e50;
+            color: #ecf0f1;
+        }
+
+        body.dark-theme #speedValue {
+            color: #3498db;
+        }
+
+        @media (max-width: 768px) {
+            .control-panel {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .title {
+                font-size: 24px;
+            }
+            
+            .formula-display {
+                font-size: 18px;
+            }
+            
+            #functionCanvas {
+                width: 100%;
+                max-width: 600px;
+                height: auto;
+            }
+
+            .preset-buttons, .animation-controls {
+                justify-content: center;
+            }
+
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 动态背景粒子 -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- 主题切换器 -->
+    <div class="theme-switcher">
+        <div class="theme-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" data-theme="light" title="浅色主题"></div>
+        <div class="theme-btn" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);" data-theme="dark" title="深色主题"></div>
+    </div>
+
+    <div class="container">
+        <h1 class="title">函数之舞：y = Asin(ωx+φ) 的交互式探索</h1>
+        
+        <div class="formula-display" id="formulaDisplay">
+            当前函数: y = 1.0 * sin(1.0 * x + 0.00)
+        </div>
+
+        <!-- 预设参数按钮 -->
+        <div class="preset-buttons">
+            <button class="preset-btn" data-preset="standard">标准函数</button>
+            <button class="preset-btn" data-preset="amplitude">大振幅</button>
+            <button class="preset-btn" data-preset="frequency">高频率</button>
+            <button class="preset-btn" data-preset="phase">相位偏移</button>
+            <button class="preset-btn" data-preset="complex">复合效果</button>
+        </div>
+        
+        <div class="control-panel">
+            <div class="slider-group">
+                <label class="slider-label">振幅 (A)</label>
+                <input type="range" id="amplitudeSlider" class="slider" 
+                       min="0.5" max="3.0" step="0.1" value="1.0">
+                <span class="slider-value" id="amplitudeValue">1.0</span>
+            </div>
+            
+            <div class="slider-group">
+                <label class="slider-label">角频率 (ω)</label>
+                <input type="range" id="frequencySlider" class="slider" 
+                       min="0.5" max="5.0" step="0.1" value="1.0">
+                <span class="slider-value" id="frequencyValue">1.0</span>
+            </div>
+            
+            <div class="slider-group">
+                <label class="slider-label">初相 (φ)</label>
+                <input type="range" id="phaseSlider" class="slider" 
+                       min="0" max="6.28" step="0.01" value="0">
+                <span class="slider-value" id="phaseValue">0.00</span>
+            </div>
+        </div>
+        
+        <!-- 函数性质分析面板 -->
+        <div class="analysis-panel">
+            <div class="analysis-title">
+                📊 函数性质分析
+            </div>
+            <div class="analysis-grid">
+                <div class="analysis-item">
+                    <div class="analysis-label">周期 (T)</div>
+                    <div class="analysis-value" id="periodValue">2π</div>
+                </div>
+                <div class="analysis-item">
+                    <div class="analysis-label">最大值</div>
+                    <div class="analysis-value" id="maxValue">1</div>
+                </div>
+                <div class="analysis-item">
+                    <div class="analysis-label">最小值</div>
+                    <div class="analysis-value" id="minValue">-1</div>
+                </div>
+                <div class="analysis-item">
+                    <div class="analysis-label">对称轴</div>
+                    <div class="analysis-value" id="symmetryAxis">x = π/2</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 动画控制面板 -->
+        <div class="animation-controls">
+            <div class="animation-type-selector">
+                <label>动画参数：</label>
+                <select id="animationType">
+                    <option value="phase">相位 (φ)</option>
+                    <option value="amplitude">振幅 (A)</option>
+                    <option value="frequency">频率 (ω)</option>
+                </select>
+            </div>
+            <div class="animation-speed-control">
+                <label>动画速度：</label>
+                <input type="range" id="animationSpeed" min="0.5" max="5" step="0.5" value="2">
+                <span id="speedValue">2.0x</span>
+            </div>
+            <button class="animation-btn" id="animateBtn">🎬 开始动画演示</button>
+            <button class="animation-btn" id="resetBtn">🔄 重置参数</button>
+            <button class="animation-btn" id="randomBtn">🎲 随机参数</button>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="functionCanvas" width="800" height="400"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // 获取Canvas和上下文
+        const canvas = document.getElementById('functionCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 获取滑块和显示元素
+        const amplitudeSlider = document.getElementById('amplitudeSlider');
+        const frequencySlider = document.getElementById('frequencySlider');
+        const phaseSlider = document.getElementById('phaseSlider');
+        
+        const amplitudeValue = document.getElementById('amplitudeValue');
+        const frequencyValue = document.getElementById('frequencyValue');
+        const phaseValue = document.getElementById('phaseValue');
+        const formulaDisplay = document.getElementById('formulaDisplay');
+        
+        // 获取新增的UI元素
+        const particlesContainer = document.getElementById('particles');
+        const themeButtons = document.querySelectorAll('.theme-btn');
+        const presetButtons = document.querySelectorAll('.preset-btn');
+        const animateBtn = document.getElementById('animateBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const randomBtn = document.getElementById('randomBtn');
+        const animationType = document.getElementById('animationType');
+        const animationSpeed = document.getElementById('animationSpeed');
+        const speedValue = document.getElementById('speedValue');
+        
+        // 分析面板元素
+        const periodValue = document.getElementById('periodValue');
+        const maxValue = document.getElementById('maxValue');
+        const minValue = document.getElementById('minValue');
+        const symmetryAxis = document.getElementById('symmetryAxis');
+        
+        // 动画状态
+        let isAnimating = false;
+        let animationId = null;
+        let animationStartTime = 0;
+        let initialValues = { amplitude: 1.0, frequency: 1.0, phase: 0.0 };
+        
+        // Canvas尺寸和坐标系参数
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const centerX = canvasWidth / 2;
+        const centerY = canvasHeight / 2;
+        
+        // 坐标系缩放比例
+        const scaleX = 60; // 每个单位在X轴上的像素数
+        const scaleY = 60; // 每个单位在Y轴上的像素数
+        
+        /**
+         * 数学坐标转换为Canvas坐标
+         * @param {number} mathX - 数学坐标系的X值
+         * @param {number} mathY - 数学坐标系的Y值
+         * @returns {object} Canvas坐标 {x, y}
+         */
+        function mathToCanvas(mathX, mathY) {
+            return {
+                x: centerX + mathX * scaleX,
+                y: centerY - mathY * scaleY // Y轴翻转
+            };
+        }
+        
+        /**
+         * 绘制坐标系
+         */
+        function drawCoordinateSystem() {
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 2;
+            
+            // 绘制X轴
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvasWidth, centerY);
+            ctx.stroke();
+            
+            // X轴箭头
+            ctx.beginPath();
+            ctx.moveTo(canvasWidth - 10, centerY - 5);
+            ctx.lineTo(canvasWidth, centerY);
+            ctx.lineTo(canvasWidth - 10, centerY + 5);
+            ctx.stroke();
+            
+            // 绘制Y轴
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvasHeight);
+            ctx.stroke();
+            
+            // Y轴箭头
+            ctx.beginPath();
+            ctx.moveTo(centerX - 5, 10);
+            ctx.lineTo(centerX, 0);
+            ctx.lineTo(centerX + 5, 10);
+            ctx.stroke();
+            
+            // 绘制刻度线和标签
+            drawGridAndLabels();
+        }
+        
+        /**
+         * 绘制网格和标签
+         */
+        function drawGridAndLabels() {
+            ctx.strokeStyle = '#bdc3c7';
+            ctx.lineWidth = 1;
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // X轴刻度和标签
+            const xLabels = [
+                { value: -2 * Math.PI, label: '-2π' },
+                { value: -Math.PI, label: '-π' },
+                { value: -Math.PI / 2, label: '-π/2' },
+                { value: Math.PI / 2, label: 'π/2' },
+                { value: Math.PI, label: 'π' },
+                { value: 2 * Math.PI, label: '2π' }
+            ];
+            
+            xLabels.forEach(item => {
+                const canvasPos = mathToCanvas(item.value, 0);
+                if (canvasPos.x >= 0 && canvasPos.x <= canvasWidth) {
+                    // 刻度线
+                    ctx.beginPath();
+                    ctx.moveTo(canvasPos.x, centerY - 5);
+                    ctx.lineTo(canvasPos.x, centerY + 5);
+                    ctx.stroke();
+                    
+                    // 标签
+                    ctx.fillText(item.label, canvasPos.x, centerY + 20);
+                    
+                    // 垂直网格线
+                    ctx.beginPath();
+                    ctx.moveTo(canvasPos.x, 0);
+                    ctx.lineTo(canvasPos.x, canvasHeight);
+                    ctx.stroke();
+                }
+            });
+            
+            // Y轴刻度和标签
+            for (let y = -3; y <= 3; y++) {
+                if (y !== 0) {
+                    const canvasPos = mathToCanvas(0, y);
+                    if (canvasPos.y >= 0 && canvasPos.y <= canvasHeight) {
+                        // 刻度线
+                        ctx.beginPath();
+                        ctx.moveTo(centerX - 5, canvasPos.y);
+                        ctx.lineTo(centerX + 5, canvasPos.y);
+                        ctx.stroke();
+                        
+                        // 标签
+                        ctx.textAlign = 'right';
+                        ctx.fillText(y.toString(), centerX - 10, canvasPos.y);
+                        
+                        // 水平网格线
+                        ctx.beginPath();
+                        ctx.moveTo(0, canvasPos.y);
+                        ctx.lineTo(canvasWidth, canvasPos.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            // 原点标签
+            ctx.textAlign = 'right';
+            ctx.fillText('0', centerX - 10, centerY + 15);
+        }
+        
+        /**
+         * 绘制三角函数图像
+         * @param {number} amplitude - 振幅A
+         * @param {number} frequency - 角频率ω
+         * @param {number} phase - 初相φ
+         */
+        function drawSineFunction(amplitude, frequency, phase) {
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            let firstPoint = true;
+            
+            // 绘制函数曲线，覆盖整个Canvas宽度
+            for (let canvasX = 0; canvasX <= canvasWidth; canvasX += 1) {
+                // Canvas坐标转换为数学坐标
+                const mathX = (canvasX - centerX) / scaleX;
+                
+                // 计算函数值
+                const mathY = amplitude * Math.sin(frequency * mathX + phase);
+                
+                // 转换回Canvas坐标
+                const canvasY = centerY - mathY * scaleY;
+                
+                if (firstPoint) {
+                    ctx.moveTo(canvasX, canvasY);
+                    firstPoint = false;
+                } else {
+                    ctx.lineTo(canvasX, canvasY);
+                }
+            }
+            
+            ctx.stroke();
+        }
+        
+        /**
+         * 更新公式显示
+         * @param {number} amplitude - 振幅A
+         * @param {number} frequency - 角频率ω
+         * @param {number} phase - 初相φ
+         */
+        function updateFormulaDisplay(amplitude, frequency, phase) {
+            formulaDisplay.textContent = 
+                `当前函数: y = ${amplitude.toFixed(1)} * sin(${frequency.toFixed(1)} * x + ${phase.toFixed(2)})`;
+        }
+        
+        /**
+         * 创建背景粒子效果
+         */
+        function createParticles() {
+            const particleCount = 50;
+            particlesContainer.innerHTML = '';
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // 随机位置
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                
+                // 随机动画延迟
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                
+                // 随机大小
+                const size = Math.random() * 3 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        /**
+         * 主题切换功能
+         */
+        function initThemeSwitcher() {
+            themeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const theme = btn.dataset.theme;
+                    
+                    // 移除所有主题类
+                    document.body.classList.remove('dark-theme');
+                    
+                    // 应用新主题
+                    if (theme === 'dark') {
+                        document.body.classList.add('dark-theme');
+                    }
+                    
+                    // 更新按钮状态
+                    themeButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    // 重新绘制图形以适应新主题
+                    redrawGraph();
+                });
+            });
+            
+            // 默认激活浅色主题
+            themeButtons[0].classList.add('active');
+        }
+        
+        /**
+         * 预设参数功能
+         */
+        function initPresetButtons() {
+            const presets = {
+                standard: { amplitude: 1.0, frequency: 1.0, phase: 0.0 },
+                amplitude: { amplitude: 2.5, frequency: 1.0, phase: 0.0 },
+                frequency: { amplitude: 1.0, frequency: 3.0, phase: 0.0 },
+                phase: { amplitude: 1.0, frequency: 1.0, phase: 1.57 },
+                complex: { amplitude: 2.0, frequency: 2.0, phase: 0.78 }
+            };
+            
+            presetButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const presetName = btn.dataset.preset;
+                    const preset = presets[presetName];
+                    
+                    if (preset) {
+                        // 平滑过渡到新参数
+                        animateToPreset(preset);
+                    }
+                });
+            });
+        }
+        
+        /**
+         * 平滑过渡到预设参数
+         */
+        function animateToPreset(targetPreset) {
+            const startAmplitude = parseFloat(amplitudeSlider.value);
+            const startFrequency = parseFloat(frequencySlider.value);
+            const startPhase = parseFloat(phaseSlider.value);
+            
+            const duration = 1000; // 1秒过渡
+            const startTime = Date.now();
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // 使用缓动函数
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                
+                // 插值计算
+                const currentAmplitude = startAmplitude + (targetPreset.amplitude - startAmplitude) * easeProgress;
+                const currentFrequency = startFrequency + (targetPreset.frequency - startFrequency) * easeProgress;
+                const currentPhase = startPhase + (targetPreset.phase - startPhase) * easeProgress;
+                
+                // 更新滑块值
+                amplitudeSlider.value = currentAmplitude;
+                frequencySlider.value = currentFrequency;
+                phaseSlider.value = currentPhase;
+                
+                // 重新绘制
+                redrawGraph();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+            
+            animate();
+        }
+        
+        /**
+         * 更新函数性质分析
+         */
+        function updateAnalysis(amplitude, frequency, phase) {
+            // 计算周期
+            const period = (2 * Math.PI / frequency).toFixed(2);
+            periodValue.textContent = frequency === 1 ? '2π' : `${period}`;
+            
+            // 计算最大值和最小值
+            maxValue.textContent = amplitude.toFixed(1);
+            minValue.textContent = (-amplitude).toFixed(1);
+            
+            // 计算对称轴（第一个最大值点）
+            const symmetryX = (Math.PI / 2 - phase) / frequency;
+            const symmetryFormatted = Math.abs(symmetryX) < 0.01 ? '0' : 
+                                    Math.abs(symmetryX - Math.PI/2) < 0.01 ? 'π/2' :
+                                    Math.abs(symmetryX - Math.PI) < 0.01 ? 'π' :
+                                    symmetryX.toFixed(2);
+            symmetryAxis.textContent = `x = ${symmetryFormatted}`;
+        }
+        
+        /**
+         * 动画演示功能
+         */
+        function initAnimationControls() {
+            animateBtn.addEventListener('click', () => {
+                if (isAnimating) {
+                    stopAnimation();
+                } else {
+                    startAnimation();
+                }
+            });
+            
+            resetBtn.addEventListener('click', () => {
+                resetParameters();
+            });
+            
+            randomBtn.addEventListener('click', () => {
+                generateRandomParameters();
+            });
+        }
+        
+        /**
+         * 开始动画演示
+         */
+        function startAnimation() {
+            isAnimating = true;
+            animateBtn.textContent = '⏸️ 停止动画';
+            animateBtn.classList.add('active');
+            animationStartTime = Date.now();
+            
+            // 保存初始值
+            initialValues = {
+                amplitude: parseFloat(amplitudeSlider.value),
+                frequency: parseFloat(frequencySlider.value),
+                phase: parseFloat(phaseSlider.value)
+            };
+            
+            function animate() {
+                if (!isAnimating) return;
+                
+                const elapsed = (Date.now() - animationStartTime) / 1000;
+                const speed = parseFloat(animationSpeed.value);
+                const type = animationType.value;
+                
+                // 根据选择的动画类型更新不同参数
+                switch(type) {
+                    case 'phase':
+                        const animatedPhase = (initialValues.phase + elapsed * speed) % (2 * Math.PI);
+                        phaseSlider.value = animatedPhase.toFixed(2);
+                        break;
+                    case 'amplitude':
+                        const animatedAmplitude = initialValues.amplitude + Math.sin(elapsed * speed) * 1.5;
+                        amplitudeSlider.value = Math.max(0.5, Math.min(3.0, animatedAmplitude)).toFixed(1);
+                        break;
+                    case 'frequency':
+                        const animatedFrequency = initialValues.frequency + Math.sin(elapsed * speed) * 2;
+                        frequencySlider.value = Math.max(0.5, Math.min(5.0, animatedFrequency)).toFixed(1);
+                        break;
+                }
+                
+                redrawGraph();
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+        
+        /**
+         * 停止动画演示
+         */
+        function stopAnimation() {
+            isAnimating = false;
+            animateBtn.textContent = '🎬 开始动画演示';
+            animateBtn.classList.remove('active');
+            
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+        
+        /**
+         * 重置参数到默认值
+         */
+        function resetParameters() {
+            const defaultPreset = { amplitude: 1.0, frequency: 1.0, phase: 0.0 };
+            animateToPreset(defaultPreset);
+        }
+        
+        /**
+         * 生成随机参数
+         */
+        function generateRandomParameters() {
+            const randomPreset = {
+                amplitude: Math.random() * 2.5 + 0.5, // 0.5 - 3.0
+                frequency: Math.random() * 4.5 + 0.5, // 0.5 - 5.0
+                phase: Math.random() * 6.28 // 0 - 2π
+            };
+            animateToPreset(randomPreset);
+        }
+        
+        /**
+         * 重新绘制整个图形
+         */
+        function redrawGraph() {
+            // 获取当前参数值
+            const amplitude = parseFloat(amplitudeSlider.value);
+            const frequency = parseFloat(frequencySlider.value);
+            const phase = parseFloat(phaseSlider.value);
+            
+            // 清空Canvas
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            
+            // 重新绘制坐标系
+            drawCoordinateSystem();
+            
+            // 绘制函数图像
+            drawSineFunction(amplitude, frequency, phase);
+            
+            // 更新数值显示
+            amplitudeValue.textContent = amplitude.toFixed(1);
+            frequencyValue.textContent = frequency.toFixed(1);
+            phaseValue.textContent = phase.toFixed(2);
+            
+            // 更新公式显示
+            updateFormulaDisplay(amplitude, frequency, phase);
+            
+            // 更新分析面板
+            updateAnalysis(amplitude, frequency, phase);
+        }
+        
+        /**
+         * 初始化应用
+         */
+        function initializeApp() {
+            // 绘制初始图形
+            redrawGraph();
+            
+            // 为滑块添加事件监听器
+            amplitudeSlider.addEventListener('input', redrawGraph);
+            frequencySlider.addEventListener('input', redrawGraph);
+            phaseSlider.addEventListener('input', redrawGraph);
+            
+            // 动画速度控制
+            animationSpeed.addEventListener('input', () => {
+                speedValue.textContent = parseFloat(animationSpeed.value).toFixed(1) + 'x';
+            });
+            
+            // 初始化新功能
+            createParticles();
+            initThemeSwitcher();
+            initPresetButtons();
+            initAnimationControls();
+        }
+        
+        // 页面加载完成后初始化应用
+        window.addEventListener('load', initializeApp);
+    </script>
+</body>
+</html>
