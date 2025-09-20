@@ -2,8 +2,41 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <!-- 微信浏览器兼容性meta标签 -->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="x5-orientation" content="portrait">
+    <meta name="x5-fullscreen" content="true">
+    <meta name="x5-page-mode" content="app">
     <title>函数之舞：三角函数交互式探索</title>
+    <!-- 添加加载提示 -->
+    <script>
+        // 微信浏览器检测和兼容性处理
+        function isWeChatBrowser() {
+            return /micromessenger/i.test(navigator.userAgent);
+        }
+        
+        // 显示加载状态
+        if (isWeChatBrowser()) {
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('微信浏览器环境检测');
+                // 添加加载提示
+                var loadingDiv = document.createElement('div');
+                loadingDiv.innerHTML = '正在加载函数之舞...';
+                loadingDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:18px;z-index:9999;';
+                document.body.appendChild(loadingDiv);
+                
+                // 3秒后移除加载提示
+                setTimeout(function() {
+                    if (loadingDiv.parentNode) {
+                        loadingDiv.parentNode.removeChild(loadingDiv);
+                    }
+                }, 3000);
+            });
+        }
+    </script>
     <style>
         * {
             margin: 0;
