@@ -372,6 +372,46 @@
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
         }
 
+        /* 函数表达式覆盖层 - 显示在第一象限内部 */
+        .formula-overlay {
+            position: absolute;
+            top: 60px;
+            right: 80px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 10px 14px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border: 2px solid #e74c3c;
+            z-index: 10;
+            max-width: 220px;
+            transition: all 0.3s ease;
+        }
+
+        .formula-overlay:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .formula-overlay .formula-label {
+            color: #e74c3c;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .formula-overlay .formula-text {
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+
         /* 主题切换器 */
         .theme-switcher {
             position: absolute;
@@ -666,6 +706,21 @@
             color: #e74c3c;
         }
 
+        /* 深色主题下的函数覆盖层 */
+        body.dark-theme .formula-overlay {
+            background: rgba(44, 62, 80, 0.95);
+            border: 2px solid #e74c3c;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-theme .formula-overlay .formula-label {
+            color: #e74c3c;
+        }
+
+        body.dark-theme .formula-overlay .formula-text {
+            color: #ecf0f1;
+        }
+
         body.dark-theme .general-formula {
             background: linear-gradient(135deg, #4a69bd, #6c5ce7);
             box-shadow: 0 4px 12px rgba(74, 105, 189, 0.4);
@@ -927,11 +982,39 @@
                 width: 100%;
                 right: -100%;
             }
+
+            /* 移动端函数覆盖层适配 */
+            .formula-overlay {
+                top: 40px;
+                right: 50px;
+                padding: 8px 12px;
+                max-width: 180px;
+            }
+
+            .formula-overlay .formula-text {
+                font-size: 16px;
+            }
         }
 
         @media (max-width: 480px) {
             .control-panel {
                 grid-template-columns: 1fr;
+            }
+
+            /* 小屏幕函数覆盖层进一步适配 */
+            .formula-overlay {
+                top: 30px;
+                right: 40px;
+                padding: 6px 10px;
+                max-width: 150px;
+            }
+
+            .formula-overlay .formula-label {
+                font-size: 12px;
+            }
+
+            .formula-overlay .formula-text {
+                font-size: 14px;
             }
         }
     </style>
@@ -1132,6 +1215,41 @@
             </div>
         </div>
         
+        <!-- 动画控制面板 -->
+        <div class="animation-controls">
+            <div class="animation-type-selector">
+                <label>🎬 动画参数：</label>
+                <select id="animationType">
+                    <option value="phase">🔄 相位 (φ)</option>
+                    <option value="amplitude">🌊 振幅 (A)</option>
+                    <option value="frequency">⚡ 频率 (ω)</option>
+                    <option value="vertical">📊 垂直偏移 (k)</option>
+                </select>
+            </div>
+            <div class="animation-speed-control">
+                <label>⚡ 动画速度：</label>
+                <input type="range" id="animationSpeed" min="0.5" max="5" step="0.5" value="2">
+                <span id="speedValue">2.0x</span>
+            </div>
+            <button class="animation-btn" id="animateBtn">🎬 开始动画演示</button>
+            <button class="animation-btn" id="resetBtn">🔄 重置参数</button>
+            <button class="animation-btn" id="knowledgeBtn">📚 知识点详解</button>
+            <button class="animation-btn" id="randomBtn">🎲 随机探索</button>
+        </div>
+
+        <div class="canvas-container">
+            <!-- 函数表达式覆盖层，显示在第一象限 -->
+            <div class="formula-overlay">
+                <div class="formula-label">
+                    🎯 当前函数
+                </div>
+                <div class="formula-text" id="formulaOverlay">
+                    y = 1.0 × sin(1.0 × x + 0.00) + 0.0
+                </div>
+            </div>
+            <canvas id="functionCanvas" width="900" height="500"></canvas>
+        </div>
+
         <!-- 函数性质分析面板 -->
         <div class="analysis-panel">
             <div class="analysis-title">
@@ -1175,32 +1293,6 @@
                 <button class="comparison-btn" id="saveCurrentBtn">保存当前函数</button>
                 <button class="comparison-btn" id="clearCompareBtn">清除对比</button>
             </div>
-        </div>
-
-        <!-- 动画控制面板 -->
-        <div class="animation-controls">
-            <div class="animation-type-selector">
-                <label>🎬 动画参数：</label>
-                <select id="animationType">
-                    <option value="phase">🔄 相位 (φ)</option>
-                    <option value="amplitude">🌊 振幅 (A)</option>
-                    <option value="frequency">⚡ 频率 (ω)</option>
-                    <option value="vertical">📊 垂直偏移 (k)</option>
-                </select>
-            </div>
-            <div class="animation-speed-control">
-                <label>⚡ 动画速度：</label>
-                <input type="range" id="animationSpeed" min="0.5" max="5" step="0.5" value="2">
-                <span id="speedValue">2.0x</span>
-            </div>
-            <button class="animation-btn" id="animateBtn">🎬 开始动画演示</button>
-            <button class="animation-btn" id="resetBtn">🔄 重置参数</button>
-            <button class="animation-btn" id="knowledgeBtn">📚 知识点详解</button>
-            <button class="animation-btn" id="randomBtn">🎲 随机探索</button>
-        </div>
-
-        <div class="canvas-container">
-            <canvas id="functionCanvas" width="900" height="500"></canvas>
         </div>
     </div>
 
@@ -1561,8 +1653,16 @@
          */
         function updateFormulaDisplay(amplitude, frequency, phase, vertical) {
             const verticalStr = vertical >= 0 ? ` + ${vertical.toFixed(1)}` : ` - ${Math.abs(vertical).toFixed(1)}`;
-            formulaDisplay.textContent = 
-                `当前函数: y = ${amplitude.toFixed(1)} × sin(${frequency.toFixed(1)} × x + ${phase.toFixed(2)})${verticalStr}`;
+            const formulaText = `y = ${amplitude.toFixed(1)} × sin(${frequency.toFixed(1)} × x + ${phase.toFixed(2)})${verticalStr}`;
+            
+            // 更新原有位置（保持兼容性）
+            formulaDisplay.textContent = `当前函数: ${formulaText}`;
+            
+            // 更新新的覆盖层位置
+            const formulaOverlay = document.getElementById('formulaOverlay');
+            if (formulaOverlay) {
+                formulaOverlay.textContent = formulaText;
+            }
         }
         
         /**
