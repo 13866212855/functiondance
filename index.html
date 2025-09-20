@@ -1515,11 +1515,42 @@
                     ctx.arc(point.x, point.y, 6, 0, 2 * Math.PI);
                     ctx.fill();
                     
-                    // 绘制标签
-                    ctx.fillStyle = '#2c3e50';
-                    ctx.font = '12px Arial';
+                    // 优化标签显示效果
+                    const labelText = point.label;
+                    const fontSize = 16; // 增加字体大小
+                    ctx.font = `bold ${fontSize}px Arial`; // 使用粗体
                     ctx.textAlign = 'center';
-                    ctx.fillText(point.label, point.x, point.y - 15);
+                    
+                    // 测量文本宽度以绘制背景
+                    const textMetrics = ctx.measureText(labelText);
+                    const textWidth = textMetrics.width;
+                    const textHeight = fontSize;
+                    const padding = 4;
+                    
+                    // 绘制白色背景矩形
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                    ctx.fillRect(
+                        point.x - textWidth/2 - padding, 
+                        point.y - 20 - textHeight - padding, 
+                        textWidth + padding * 2, 
+                        textHeight + padding * 2
+                    );
+                    
+                    // 绘制黑色边框
+                    ctx.strokeStyle = '#2c3e50';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(
+                        point.x - textWidth/2 - padding, 
+                        point.y - 20 - textHeight - padding, 
+                        textWidth + padding * 2, 
+                        textHeight + padding * 2
+                    );
+                    
+                    // 绘制深色文本
+                    ctx.fillStyle = '#2c3e50';
+                    ctx.fillText(labelText, point.x, point.y - 20 - padding);
+                    
+                    // 恢复点的颜色
                     ctx.fillStyle = '#e74c3c';
                 }
             });
