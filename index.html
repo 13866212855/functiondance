@@ -247,6 +247,74 @@
             animation: pulse 1s infinite;
         }
 
+        /* 智能提示框 */
+        .smart-tooltip {
+            position: fixed;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            font-size: 14px;
+            max-width: 300px;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .smart-tooltip.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .smart-tooltip::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid #667eea;
+        }
+
+        .smart-tooltip h4 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .smart-tooltip p {
+            margin: 0 0 8px 0;
+            line-height: 1.4;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .smart-tooltip .tooltip-example {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            border-left: 3px solid #4CAF50;
+        }
+
+        /* 深色主题下的智能提示框 */
+        body.dark-theme .smart-tooltip {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark-theme .smart-tooltip::before {
+            border-bottom-color: #2c3e50;
+        }
+
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.2); }
@@ -1108,6 +1176,13 @@
         const canvas = document.getElementById('functionCanvas');
         const ctx = canvas.getContext('2d');
         
+        // 拖拽功能变量
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        let offsetX = 0;
+        let offsetY = 0;
+        
         // 获取滑块和显示元素
         const amplitudeSlider = document.getElementById('amplitudeSlider');
         const frequencySlider = document.getElementById('frequencySlider');
@@ -1150,6 +1225,12 @@
         const maxValue = document.getElementById('maxValue');
         const minValue = document.getElementById('minValue');
         const centerLine = document.getElementById('centerLine');
+        
+        // 智能提示框元素
+        const smartTooltip = document.getElementById('smartTooltip');
+        const tooltipTitle = document.getElementById('tooltipTitle');
+        const tooltipContent = document.getElementById('tooltipContent');
+        const tooltipExample = document.getElementById('tooltipExample');
         const symmetryAxis = document.getElementById('symmetryAxis');
         const rangeValue = document.getElementById('rangeValue');
         
@@ -1187,6 +1268,16 @@
             return {
                 x: centerX + mathX * scaleX,
                 y: centerY - mathY * scaleY // Y轴翻转
+            };
+        }
+        
+        /**
+         * 数学坐标转换为Canvas坐标（带偏移，用于函数图像）
+         */
+        function mathToCanvasWithOffset(mathX, mathY) {
+            return {
+                x: centerX + mathX * scaleX + offsetX,
+                y: centerY - mathY * scaleY + offsetY // Y轴翻转
             };
         }
         
@@ -1323,14 +1414,14 @@
             
             // 绘制函数曲线，覆盖整个Canvas宽度
             for (let canvasX = 0; canvasX <= canvasWidth; canvasX += 1) {
-                // Canvas坐标转换为数学坐标
-                const mathX = (canvasX - centerX) / scaleX;
+                // Canvas坐标转换为数学坐标（考虑偏移）
+                const mathX = (canvasX - centerX - offsetX) / scaleX;
                 
                 // 计算函数值
                 const mathY = amplitude * Math.sin(frequency * mathX + phase) + vertical;
                 
-                // 转换回Canvas坐标
-                const canvasY = centerY - mathY * scaleY;
+                // 转换回Canvas坐标（应用偏移）
+                const canvasY = centerY - mathY * scaleY + offsetY;
                 
                 points.push({ x: canvasX, y: canvasY, mathX, mathY });
                 
@@ -1468,6 +1559,69 @@
             setTimeout(() => {
                 hintElement.classList.remove('active');
             }, 2000);
+        }
+
+        /**
+         * 显示智能提示框
+         */
+        function showSmartTooltip(parameterType, value, event) {
+            const tooltipData = {
+                amplitude: {
+                    title: "🌊 振幅参数 A",
+                    content: "控制函数图像的'高度'，决定波浪的强度。A越大，波浪越高；A越小，波浪越平缓。就像音乐中的音量大小！",
+                    example: `当前振幅 A = ${value}，函数最大值为 ${value}，最小值为 ${-value}`
+                },
+                frequency: {
+                    title: "🔄 频率参数 ω",
+                    content: "控制函数的'节奏'，决定波浪的密集程度。ω越大，波浪越密集，就像心跳越快一样！",
+                    example: `当前频率 ω = ${value}，周期 T = ${(2 * Math.PI / value).toFixed(2)}`
+                },
+                phase: {
+                    title: "📐 相位参数 φ",
+                    content: "控制函数的'起始位置'，就像舞蹈演员的出场时间。整个图像会在水平方向移动！",
+                    example: `当前相位 φ = ${value.toFixed(2)}，图像向${value > 0 ? '左' : '右'}偏移 ${Math.abs(value).toFixed(2)} 弧度`
+                },
+                vertical: {
+                    title: "⬆️ 垂直偏移 k",
+                    content: "让整个函数'上下移动'，就像调整舞台的高度。改变函数图像的基准线位置！",
+                    example: `当前偏移 k = ${value}，整个图像向${value > 0 ? '上' : '下'}移动 ${Math.abs(value)} 个单位`
+                }
+            };
+
+            const data = tooltipData[parameterType];
+            if (!data) return;
+
+            tooltipTitle.textContent = data.title;
+            tooltipContent.textContent = data.content;
+            tooltipExample.textContent = data.example;
+
+            // 计算提示框位置
+            const rect = event.target.getBoundingClientRect();
+            const tooltipRect = smartTooltip.getBoundingClientRect();
+            
+            let left = rect.left + rect.width / 2 - 150; // 150是提示框宽度的一半
+            let top = rect.top - 120; // 提示框高度加上一些间距
+
+            // 确保提示框不超出屏幕边界
+            if (left < 10) left = 10;
+            if (left + 300 > window.innerWidth) left = window.innerWidth - 310;
+            if (top < 10) top = rect.bottom + 10;
+
+            smartTooltip.style.left = left + 'px';
+            smartTooltip.style.top = top + 'px';
+            smartTooltip.classList.add('show');
+
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                smartTooltip.classList.remove('show');
+            }, 3000);
+        }
+
+        /**
+         * 隐藏智能提示框
+         */
+        function hideSmartTooltip() {
+            smartTooltip.classList.remove('show');
         }
         
         /**
@@ -1749,6 +1903,7 @@
           * 重新绘制整个图形
           */
          function redrawGraph() {
+             console.log('redrawGraph called');
              // 获取当前参数值
              const amplitude = parseFloat(amplitudeSlider.value);
              const frequency = parseFloat(frequencySlider.value);
@@ -1800,35 +1955,149 @@
              redrawGraph();
              
              // 为滑块添加事件监听器
-             amplitudeSlider.addEventListener('input', () => {
-                 showParameterHint(amplitudeHint);
+            amplitudeSlider.addEventListener('input', (e) => {
+                console.log('Amplitude slider changed to:', amplitudeSlider.value);
+                redrawGraph();
+                try {
+                    showParameterHint(amplitudeHint);
+                    showSmartTooltip('amplitude', parseFloat(amplitudeSlider.value), e);
+                } catch (error) {
+                    console.error('Error in amplitude hint:', error);
+                }
+            });
+            frequencySlider.addEventListener('input', (e) => {
+                console.log('Frequency slider changed to:', frequencySlider.value);
+                redrawGraph();
+                try {
+                    showParameterHint(frequencyHint);
+                    showSmartTooltip('frequency', parseFloat(frequencySlider.value), e);
+                } catch (error) {
+                    console.error('Error in frequency hint:', error);
+                }
+            });
+            phaseSlider.addEventListener('input', (e) => {
+                console.log('Phase slider changed to:', phaseSlider.value);
+                redrawGraph();
+                try {
+                    showParameterHint(phaseHint);
+                    showSmartTooltip('phase', parseFloat(phaseSlider.value), e);
+                } catch (error) {
+                    console.error('Error in phase hint:', error);
+                }
+            });
+            verticalSlider.addEventListener('input', (e) => {
+                console.log('Vertical slider changed to:', verticalSlider.value);
+                redrawGraph();
+                try {
+                    showParameterHint(verticalHint);
+                    showSmartTooltip('vertical', parseFloat(verticalSlider.value), e);
+                } catch (error) {
+                    console.error('Error in vertical hint:', error);
+                }
+            });
+             
+             /**
+              * 根据偏移量更新参数值
+              */
+             function updateParametersFromOffset() {
+                 // 计算相位变化：水平偏移转换为相位变化
+                 // 相位变化 = -偏移量 * 频率 / 缩放比例
+                 const frequency = parseFloat(frequencySlider.value);
+                 const phaseChange = -(offsetX / scaleX) * frequency;
+                 const newPhase = phaseChange;
+                 
+                 // 计算垂直偏移变化：垂直偏移转换为垂直偏移参数变化
+                 const verticalChange = -(offsetY / scaleY);
+                 const newVertical = verticalChange;
+                 
+                 // 更新滑块值（限制在范围内）
+                 const clampedPhase = Math.max(-Math.PI, Math.min(Math.PI, newPhase));
+                 const clampedVertical = Math.max(-3, Math.min(3, newVertical));
+                 
+                 phaseSlider.value = clampedPhase;
+                 verticalSlider.value = clampedVertical;
+                 
+                 // 更新显示值
+                 phaseValue.textContent = clampedPhase.toFixed(2);
+                 verticalValue.textContent = clampedVertical.toFixed(2);
+                 
+                 // 更新公式显示
+                 const amplitude = parseFloat(amplitudeSlider.value);
+                 updateFormulaDisplay(amplitude, frequency, clampedPhase, clampedVertical);
+             }
+             
+             // Canvas拖拽事件监听器
+             canvas.addEventListener('mousedown', (e) => {
+                 isDragging = true;
+                 const rect = canvas.getBoundingClientRect();
+                 lastMouseX = e.clientX - rect.left;
+                 lastMouseY = e.clientY - rect.top;
+                 canvas.style.cursor = 'grabbing';
+             });
+             
+             canvas.addEventListener('mousemove', (e) => {
+                 if (isDragging) {
+                     const rect = canvas.getBoundingClientRect();
+                     const currentMouseX = e.clientX - rect.left;
+                     const currentMouseY = e.clientY - rect.top;
+                     
+                     const deltaX = currentMouseX - lastMouseX;
+                     const deltaY = currentMouseY - lastMouseY;
+                     
+                     // 更新偏移量
+                     offsetX += deltaX;
+                     offsetY += deltaY;
+                     
+                     // 同步更新参数值
+                     updateParametersFromOffset();
+                     
+                     lastMouseX = currentMouseX;
+                     lastMouseY = currentMouseY;
+                     
+                     redrawGraph();
+                 }
+             });
+             
+             canvas.addEventListener('mouseup', () => {
+                 isDragging = false;
+                 canvas.style.cursor = 'grab';
+                 // 重置偏移量，因为参数已经更新
+                 offsetX = 0;
+                 offsetY = 0;
                  redrawGraph();
              });
-             frequencySlider.addEventListener('input', () => {
-                 showParameterHint(frequencyHint);
+             
+             canvas.addEventListener('mouseleave', () => {
+                 isDragging = false;
+                 canvas.style.cursor = 'default';
+                 // 重置偏移量，因为参数已经更新
+                 offsetX = 0;
+                 offsetY = 0;
                  redrawGraph();
              });
-             phaseSlider.addEventListener('input', () => {
-                 showParameterHint(phaseHint);
-                 redrawGraph();
-             });
-             verticalSlider.addEventListener('input', () => {
-                 showParameterHint(verticalHint);
-                 redrawGraph();
-             });
+             
+             // 设置Canvas默认鼠标样式
+             canvas.style.cursor = 'grab';
              
              // 动画速度控制
              animationSpeed.addEventListener('input', () => {
                  speedValue.textContent = parseFloat(animationSpeed.value).toFixed(1) + 'x';
              });
              
-             // 知识点面板控制
+             // 知识点面板控制 - 切换显示/隐藏
              knowledgeBtn.addEventListener('click', function() {
-                 knowledgePanel.classList.add('show');
+                 if (knowledgePanel.classList.contains('show')) {
+                     knowledgePanel.classList.remove('show');
+                     knowledgeBtn.textContent = '📚 知识点讲解';
+                 } else {
+                     knowledgePanel.classList.add('show');
+                     knowledgeBtn.textContent = '📚 隐藏讲解';
+                 }
              });
 
              closeKnowledge.addEventListener('click', function() {
                  knowledgePanel.classList.remove('show');
+                 knowledgeBtn.textContent = '📚 知识点讲解';
              });
 
              // 点击面板外部关闭知识点面板
@@ -1837,6 +2106,7 @@
                      !knowledgePanel.contains(e.target) && 
                      !knowledgeBtn.contains(e.target)) {
                      knowledgePanel.classList.remove('show');
+                     knowledgeBtn.textContent = '📚 知识点讲解';
                  }
              });
 
@@ -1858,5 +2128,12 @@
          // 页面加载完成后初始化应用
          window.addEventListener('load', initializeApp);
      </script>
- </body>
+
+    <!-- 智能提示框 -->
+    <div id="smartTooltip" class="smart-tooltip">
+        <h4 id="tooltipTitle">参数说明</h4>
+        <p id="tooltipContent">这里显示参数的详细说明</p>
+        <div id="tooltipExample" class="tooltip-example">示例：当前值的效果</div>
+    </div>
+</body>
  </html>
